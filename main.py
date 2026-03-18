@@ -5,11 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3
 import os
-import smtplib
 import urllib.request
 import json
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
 app = FastAPI(title="CostBid Solutions API")
@@ -21,16 +18,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── CONFIG (set these as environment variables on Railway) ────────────────────
-GMAIL_SENDER       = os.getenv("GMAIL_SENDER", "")
-GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "")
-NOTIFY_EMAIL       = os.getenv("NOTIFY_EMAIL", "4720yashjain@gmail.com")
-SHEETS_WEBHOOK     = os.getenv("SHEETS_WEBHOOK", "")
-ADMIN_SECRET       = os.getenv("ADMIN_SECRET", "costbid-admin-2025")
+# ── CONFIG (Railway environment variables) ────────────────────────────────────
+RESEND_API_KEY  = os.getenv("RESEND_API_KEY", "")           # from resend.com
+NOTIFY_EMAIL    = os.getenv("NOTIFY_EMAIL", "4720yashjain@gmail.com")
+SHEETS_WEBHOOK  = os.getenv("SHEETS_WEBHOOK", "")
+ADMIN_SECRET    = os.getenv("ADMIN_SECRET", "costbid-admin-2025")
+DB_PATH         = os.getenv("DB_PATH", "costbid.db")
 
 # ── DATABASE ──────────────────────────────────────────────────────────────────
-DB_PATH = os.getenv("DB_PATH", "costbid.db")
-
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -68,7 +63,7 @@ class EnquiryIn(BaseModel):
 # ── GOOGLE SHEETS via Apps Script ─────────────────────────────────────────────
 def send_to_sheets(data: EnquiryIn, timestamp: str):
     if not SHEETS_WEBHOOK:
-        print("SHEETS_WEBHOOK not set — skipping Sheets.")
+        print("SHEETS_WEBHOOK not set — skipping.")
         return
     try:
         payload = json.dumps({
@@ -91,17 +86,12 @@ def send_to_sheets(data: EnquiryIn, timestamp: str):
     except Exception as e:
         print(f"Sheets error: {e}")
 
-# ── GMAIL NOTIFICATION ────────────────────────────────────────────────────────
+# ── EMAIL via Resend API (HTTP — works on Railway) ────────────────────────────
 def send_email_notification(data: EnquiryIn, timestamp: str):
-    if not GMAIL_SENDER or not GMAIL_APP_PASSWORD:
-        print("Gmail credentials not set — skipping email.")
+    if not RESEND_API_KEY:
+        print("RESEND_API_KEY not set — skipping email.")
         return
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"New Enquiry — {data.first_name} {data.last_name} ({data.company})"
-        msg["From"]    = f"CostBid Solutions <{GMAIL_SENDER}>"
-        msg["To"]      = NOTIFY_EMAIL
-
         html = f"""
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0A1628;color:#ffffff;padding:32px;border-radius:8px;">
           <h2 style="color:#C9A84C;margin-bottom:4px;">New Enquiry Received</h2>
@@ -126,12 +116,25 @@ def send_email_notification(data: EnquiryIn, timestamp: str):
           <p style="font-size:12px;color:#8A9BB5;text-align:center;">CostBid Solutions · Gurugram, Haryana, India</p>
         </div>
         """
-        msg.attach(MIMEText(html, "html"))
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
-            server.sendmail(GMAIL_SENDER, NOTIFY_EMAIL, msg.as_string())
-        print("Email sent successfully.")
+        payload = json.dumps({
+            "from":    "CostBid Solutions <onboarding@resend.dev>",
+            "to":      [NOTIFY_EMAIL],
+            "subject": f"New Enquiry — {data.first_name} {data.last_name} ({data.company})",
+            "html":    html,
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            "https://api.resend.com/emails",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type":  "application/json",
+            },
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            print("Email sent:", resp.read().decode())
     except Exception as e:
         print(f"Email error: {e}")
 
