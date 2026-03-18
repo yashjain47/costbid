@@ -19,11 +19,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-RESEND_API_KEY  = os.getenv("RESEND_API_KEY", "")
-NOTIFY_EMAIL    = os.getenv("NOTIFY_EMAIL", "4720yashjain@gmail.com")
-SHEETS_WEBHOOK  = os.getenv("SHEETS_WEBHOOK", "")
-ADMIN_SECRET    = os.getenv("ADMIN_SECRET", "costbid-admin-2025")
-DB_PATH         = os.getenv("DB_PATH", "costbid.db")
+BREVO_API_KEY  = os.getenv("BREVO_API_KEY", "")
+NOTIFY_EMAIL   = os.getenv("NOTIFY_EMAIL", "4720yashjain@gmail.com")
+SHEETS_WEBHOOK = os.getenv("SHEETS_WEBHOOK", "")
+ADMIN_SECRET   = os.getenv("ADMIN_SECRET", "costbid-admin-2025")
+DB_PATH        = os.getenv("DB_PATH", "costbid.db")
 
 # ── DATABASE ──────────────────────────────────────────────────────────────────
 def get_db():
@@ -85,59 +85,81 @@ def send_to_sheets(data: EnquiryIn, timestamp: str):
     except Exception as e:
         print(f"Sheets error: {e}")
 
-# ── EMAIL via Resend ──────────────────────────────────────────────────────────
+# ── EMAIL via Brevo (works on Railway) ───────────────────────────────────────
 def send_email_notification(data: EnquiryIn, timestamp: str):
-    key = RESEND_API_KEY.strip()
-    print(f"[Email] Key present: {bool(key)} | Key prefix: {key[:6] if key else 'EMPTY'} | Notify: {NOTIFY_EMAIL}")
+    key = BREVO_API_KEY.strip()
+    print(f"[Email] Brevo key present: {bool(key)} | Notify: {NOTIFY_EMAIL}")
 
     if not key:
-        print("[Email] No API key — skipping.")
+        print("[Email] No Brevo API key — skipping.")
         return
     try:
         html = f"""
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0A1628;color:#ffffff;padding:32px;">
-          <h2 style="color:#C9A84C;">New Enquiry — CostBid Solutions</h2>
-          <p><b>Name:</b> {data.first_name} {data.last_name}</p>
-          <p><b>Company:</b> {data.company}</p>
-          <p><b>Email:</b> {data.email}</p>
-          <p><b>Service:</b> {data.service}</p>
-          <p><b>Brief:</b> {data.brief or 'None'}</p>
-          <p style="color:#8A9BB5;font-size:12px;">{timestamp} UTC</p>
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;
+                    background:#0A1628;color:#ffffff;padding:32px;border-radius:8px;">
+          <h2 style="color:#C9A84C;margin-bottom:4px;">New Enquiry Received</h2>
+          <p style="color:#8A9BB5;font-size:13px;margin-top:0;">{timestamp} UTC</p>
+          <hr style="border:none;border-top:1px solid rgba(201,168,76,0.2);margin:20px 0;"/>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:8px 0;color:#8A9BB5;font-size:13px;width:140px;">Name</td>
+                <td style="padding:8px 0;font-weight:bold;">{data.first_name} {data.last_name}</td></tr>
+            <tr><td style="padding:8px 0;color:#8A9BB5;font-size:13px;">Company</td>
+                <td style="padding:8px 0;">{data.company}</td></tr>
+            <tr><td style="padding:8px 0;color:#8A9BB5;font-size:13px;">Email</td>
+                <td style="padding:8px 0;">
+                  <a href="mailto:{data.email}" style="color:#C9A84C;">{data.email}</a>
+                </td></tr>
+            <tr><td style="padding:8px 0;color:#8A9BB5;font-size:13px;">Service</td>
+                <td style="padding:8px 0;color:#C9A84C;font-weight:bold;">{data.service}</td></tr>
+          </table>
+          <hr style="border:none;border-top:1px solid rgba(201,168,76,0.2);margin:20px 0;"/>
+          <p style="color:#8A9BB5;font-size:13px;margin-bottom:6px;">Project Brief</p>
+          <p style="background:#122040;padding:16px;border-left:3px solid #C9A84C;
+                    border-radius:4px;font-size:14px;line-height:1.6;">
+            {data.brief or "<em style='color:#8A9BB5;'>No brief provided.</em>"}
+          </p>
+          <hr style="border:none;border-top:1px solid rgba(201,168,76,0.2);margin:20px 0;"/>
+          <p style="font-size:12px;color:#8A9BB5;text-align:center;">
+            CostBid Solutions · Gurugram, Haryana, India
+          </p>
         </div>
         """
+
         payload = json.dumps({
-            "from":    "CostBid Solutions <onboarding@resend.dev>",
-            "to":      [NOTIFY_EMAIL.strip()],
-            "subject": f"New Enquiry — {data.first_name} {data.last_name}",
-            "html":    html,
+            "sender":      {"name": "CostBid Solutions", "email": "noreply@costbid.in"},
+            "to":          [{"email": NOTIFY_EMAIL.strip()}],
+            "subject":     f"New Enquiry — {data.first_name} {data.last_name} ({data.company})",
+            "htmlContent": html,
         }).encode("utf-8")
 
         req = urllib.request.Request(
-            "https://api.resend.com/emails",
+            "https://api.brevo.com/v3/smtp/email",
             data=payload,
             headers={
-                "Authorization": f"Bearer {key}",
-                "Content-Type":  "application/json",
+                "api-key":      key,
+                "Content-Type": "application/json",
+                "Accept":       "application/json",
             },
             method="POST"
         )
         with urllib.request.urlopen(req, timeout=15) as resp:
             result = resp.read().decode()
             print(f"[Email] Success: {result}")
+
     except urllib.error.HTTPError as e:
         body = e.read().decode()
         print(f"[Email] HTTP {e.code}: {body}")
     except Exception as e:
         print(f"[Email] Exception: {type(e).__name__}: {e}")
 
-# ── DEBUG ROUTE — visit this URL to test email instantly ──────────────────────
+# ── DEBUG ─────────────────────────────────────────────────────────────────────
 @app.get("/api/test-email")
 async def test_email():
-    key = RESEND_API_KEY.strip()
+    key = BREVO_API_KEY.strip()
     return {
-        "resend_key_present": bool(key),
-        "resend_key_prefix": key[:8] if key else "EMPTY",
-        "notify_email": NOTIFY_EMAIL,
+        "brevo_key_present":   bool(key),
+        "brevo_key_prefix":    key[:8] if key else "EMPTY",
+        "notify_email":        NOTIFY_EMAIL,
         "sheets_webhook_present": bool(SHEETS_WEBHOOK),
     }
 
