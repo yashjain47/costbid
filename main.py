@@ -126,7 +126,7 @@ def send_email_notification(data: EnquiryIn, timestamp: str):
         """
 
         payload = json.dumps({
-            "sender":      {"name": "CostBid Solutions", "email": "noreply@costbid.in"},
+            "sender":      {"name": "CostBid Solutions", "email": "4720yashjain@gmail.com"},
             "to":          [{"email": NOTIFY_EMAIL.strip()}],
             "subject":     f"New Enquiry — {data.first_name} {data.last_name} ({data.company})",
             "htmlContent": html,
