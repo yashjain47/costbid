@@ -110,7 +110,9 @@
   }
   @media (max-width: 600px) { .footer-top { grid-template-columns: 1fr; } }
 
-  .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .fade-up { opacity: 1; transform: translateY(0); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .fade-up.animate { opacity: 0; transform: translateY(28px); }
+  .fade-up.animate.visible { opacity: 1; transform: translateY(0); }
   .fade-up.visible { opacity: 1; transform: translateY(0); }
   .fade-up.d1 { transition-delay: 0.1s; }
   .fade-up.d2 { transition-delay: 0.2s; }
@@ -198,6 +200,7 @@
     </div>
   </div>
 </section>
+
 
 <!-- TEAM -->
 <section class="team">
@@ -287,7 +290,7 @@
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
   }, { threshold: 0.12 });
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  document.querySelectorAll('.fade-up').forEach(el => { el.classList.add('animate'); observer.observe(el); });
 </script>
 </body>
 </html>
