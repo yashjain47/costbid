@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: costbid-solutions
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ADMIN_SECRET
+        generateValue: true
+    disk:
+      name: costbid-db
+      mountPath: /data
+      sizeGB: 1
