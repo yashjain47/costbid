@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Case Studies – CostBid Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0A1628; --navy-mid: #122040; --navy-light: #1C3060;
+    --gold: #C9A84C; --gold-light: #E2C47A; --white: #FFFFFF;
+    --text-muted: #8A9BB5; --border: rgba(201,168,76,0.2);
+    --font-display: 'Cormorant Garamond', serif; --font-body: 'DM Sans', sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font-body); background: var(--navy); color: var(--white); overflow-x: hidden; font-size: 16px; line-height: 1.7; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 5%; background: rgba(10,22,40,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  .logo { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--white); text-decoration: none; }
+  .logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a { font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--gold-light); }
+  .nav-cta { background: transparent; border: 1px solid var(--gold); color: var(--gold); font-family: var(--font-body); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.6rem 1.5rem; text-decoration: none; transition: all 0.25s; }
+  .nav-cta:hover { background: var(--gold); color: var(--navy); }
+
+  .breadcrumb { padding: 7rem 5% 0; }
+  .breadcrumb-inner { display: flex; align-items: center; gap: 0.6rem; font-size: 0.78rem; color: var(--text-muted); }
+  .breadcrumb-inner a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .breadcrumb-inner a:hover { color: var(--gold); }
+  .breadcrumb-inner span { color: var(--gold); }
+  .breadcrumb-sep { opacity: 0.4; }
+
+  .page-hero { padding: 3rem 5% 5rem; }
+  .section-tag { display: inline-flex; align-items: center; gap: 0.75rem; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .section-tag::before { content: ''; display: block; width: 28px; height: 1px; background: var(--gold); }
+  .page-title { font-family: var(--font-display); font-size: clamp(2.8rem, 5vw, 5rem); font-weight: 600; line-height: 1.08; color: var(--white); margin-bottom: 1.5rem; }
+  .page-title em { font-style: normal; color: var(--gold); }
+  .page-lead { font-size: 1.1rem; font-weight: 300; color: var(--text-muted); max-width: 600px; line-height: 1.8; }
+
+  section { padding: 5rem 5%; }
+
+  /* FEATURED CASE */
+  .featured { background: var(--navy); }
+  .featured-card { border: 1px solid var(--border); padding: 3.5rem; position: relative; overflow: hidden; }
+  .featured-card::before { content: 'FEATURED'; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.18em; color: var(--gold); border: 1px solid var(--gold); padding: 0.3rem 0.75rem; }
+  .featured-inner { display: grid; grid-template-columns: 1.2fr 1fr; gap: 4rem; align-items: start; }
+  .case-industry { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .case-title { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 600; color: var(--white); margin-bottom: 1rem; line-height: 1.2; }
+  .case-title em { font-style: normal; color: var(--gold); }
+  .case-challenge-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; margin-top: 1.5rem; }
+  .case-challenge-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.8; }
+  .results-block { display: flex; flex-direction: column; gap: 1rem; }
+  .result-item { border: 1px solid var(--border); padding: 1.5rem; display: flex; gap: 1.25rem; align-items: flex-start; transition: border-color 0.3s; }
+  .result-item:hover { border-color: var(--gold); }
+  .result-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; color: var(--gold); line-height: 1; min-width: 5rem; }
+  .result-label { font-size: 0.82rem; font-weight: 500; color: var(--white); margin-bottom: 0.2rem; }
+  .result-sub { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* CASES GRID */
+  .cases { background: var(--navy-mid); }
+  .cases-header { margin-bottom: 3.5rem; }
+  .section-title { font-family: var(--font-display); font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 600; line-height: 1.12; color: var(--white); margin-bottom: 1rem; }
+  .section-title em { font-style: normal; color: var(--gold); }
+  .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+  .case-card { border: 1px solid var(--border); padding: 2.5rem; position: relative; transition: border-color 0.3s; }
+  .case-card:hover { border-color: var(--gold); }
+  .case-card::before { content: ''; position: absolute; top: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width 0.4s; }
+  .case-card:hover::before { width: 100%; }
+  .case-metrics { display: flex; gap: 1.5rem; margin: 1.5rem 0; padding: 1.5rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .metric { text-align: center; }
+  .metric-num { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--gold); line-height: 1; }
+  .metric-label { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-top: 0.3rem; }
+  .case-service-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .case-tag { border: 1px solid var(--border); padding: 0.3rem 0.75rem; font-size: 0.7rem; color: var(--text-muted); }
+
+  /* STATS BAND */
+  .stats-band { background: var(--navy-light); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 5rem 5%; }
+  .stats-inner { display: grid; grid-template-columns: repeat(4,1fr); gap: 2rem; text-align: center; }
+  .band-num { font-family: var(--font-display); font-size: 3.2rem; font-weight: 700; color: var(--gold); line-height: 1; }
+  .band-label { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-top: 0.5rem; }
+
+  /* CTA */
+  .cta-band { background: var(--navy); padding: 5rem 5%; text-align: center; }
+  .cta-band h2 { font-family: var(--font-display); font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 600; color: var(--white); margin-bottom: 1rem; }
+  .cta-band h2 em { font-style: normal; color: var(--gold); }
+  .cta-band p { font-size: 1rem; color: var(--text-muted); margin-bottom: 2.5rem; }
+  .btn-primary { background: var(--gold); color: var(--navy); font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 1rem 2.25rem; text-decoration: none; display: inline-block; transition: all 0.25s; }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+
+  footer { background: #050E1A; padding: 4rem 5% 2.5rem; border-top: 1px solid var(--border); }
+  .footer-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3.5rem; }
+  .footer-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--white); margin-bottom: 1rem; }
+  .footer-logo span { color: var(--gold); }
+  .footer-tagline { font-size: 0.85rem; font-weight: 300; color: var(--text-muted); line-height: 1.75; max-width: 260px; }
+  .footer-col h4 { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.25rem; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li + li { margin-top: 0.65rem; }
+  .footer-col ul li a { font-size: 0.85rem; font-weight: 300; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .footer-col ul li a:hover { color: var(--gold-light); }
+  .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 2rem; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 1rem; }
+  .footer-copy { font-size: 0.78rem; color: rgba(138,155,181,0.5); font-weight: 300; }
+
+  @media (max-width: 900px) {
+    .featured-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .stats-inner { grid-template-columns: repeat(2,1fr); }
+    .footer-top { grid-template-columns: 1fr 1fr; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 600px) { .footer-top { grid-template-columns: 1fr; } .stats-inner { grid-template-columns: 1fr 1fr; } }
+
+  .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+  .fade-up.d1 { transition-delay: 0.1s; } .fade-up.d2 { transition-delay: 0.2s; } .fade-up.d3 { transition-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">Cost<span>Bid</span> Solutions</a>
+  <ul class="nav-links">
+    <li><a href="/#services">Services</a></li>
+    <li><a href="/#how">Process</a></li>
+    <li><a href="/about.html">About</a></li>
+    <li><a href="/team.html">Team</a></li>
+    <li><a href="/#contact">Contact</a></li>
+  </ul>
+  <a href="/#contact" class="nav-cta">Get a Quote</a>
+</nav>
+
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Case Studies</span>
+  </div>
+</div>
+
+<div class="page-hero">
+  <div class="section-tag">Proven Results</div>
+  <h1 class="page-title">Real Projects.<br/><em>Real Savings.</em></h1>
+  <p class="page-lead">Every engagement we take on has one goal — measurable financial impact for our clients. Here's a selection of results we've delivered across industries.</p>
+</div>
+
+<!-- FEATURED -->
+<section class="featured">
+  <div class="featured-card fade-up">
+    <div class="featured-inner">
+      <div>
+        <div class="case-industry">Automotive · Cost Optimization</div>
+        <div class="case-title">Reducing Procurement Costs by <em>₹1.8 Crore</em> for a Tier-1 Auto Parts Supplier</div>
+        <div class="case-challenge-label">The Challenge</div>
+        <p class="case-challenge-text">A Tier-1 automotive supplier was experiencing margin erosion across three product lines due to rising raw material costs and uncompetitive supplier contracts. They needed a full cost audit and renegotiation strategy within 60 days before their annual contract review cycle.</p>
+        <div class="case-challenge-label">Our Approach</div>
+        <p class="case-challenge-text">We conducted a full BOM audit across all three product lines, benchmarked supplier pricing against live market rates, and identified 14 specific procurement leakages. We then developed a structured renegotiation playbook for their procurement team.</p>
+        <div class="case-challenge-label">Services Used</div>
+        <div class="case-service-tags" style="margin-top:0.5rem;">
+          <span class="case-tag">Costing Services</span>
+          <span class="case-tag">Cost Optimization</span>
+          <span class="case-tag">Supplier Advisory</span>
+        </div>
+      </div>
+      <div class="results-block">
+        <div class="result-item">
+          <div class="result-num">₹1.8Cr</div>
+          <div><div class="result-label">Annual Savings Identified</div><div class="result-sub">Across 3 product lines</div></div>
+        </div>
+        <div class="result-item">
+          <div class="result-num">34%</div>
+          <div><div class="result-label">Reduction in Procurement Cost</div><div class="result-sub">vs. previous year baseline</div></div>
+        </div>
+        <div class="result-item">
+          <div class="result-num">60</div>
+          <div><div class="result-label">Days to Deliver Full Audit</div><div class="result-sub">Completed before contract cycle</div></div>
+        </div>
+        <div class="result-item">
+          <div class="result-num">14</div>
+          <div><div class="result-label">Leakage Points Identified</div><div class="result-sub">All addressed in renegotiation</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CASES GRID -->
+<section class="cases">
+  <div class="cases-header fade-up">
+    <div class="section-tag">More Projects</div>
+    <h2 class="section-title">More Results Across<br/><em>Industries</em></h2>
+  </div>
+  <div class="cases-grid">
+    <div class="case-card fade-up">
+      <div class="case-industry">Logistics & Freight · Bidding Services</div>
+      <div class="case-title" style="font-family:var(--font-display);font-size:1.4rem;font-weight:600;color:var(--white);margin:0.75rem 0;line-height:1.3;">Winning a ₹12Cr Logistics Contract with a Structured Bid</div>
+      <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.8;">A mid-size logistics firm had a strong operational track record but kept losing tenders due to poorly structured bid documents. We rebuilt their RFP response framework from scratch.</p>
+      <div class="case-metrics">
+        <div class="metric"><div class="metric-num">₹12Cr</div><div class="metric-label">Contract Won</div></div>
+        <div class="metric"><div class="metric-num">3x</div><div class="metric-label">Win Rate Improvement</div></div>
+        <div class="metric"><div class="metric-num">72h</div><div class="metric-label">Bid Turnaround</div></div>
+      </div>
+      <div class="case-service-tags">
+        <span class="case-tag">Bidding Services</span>
+        <span class="case-tag">RFP Preparation</span>
+      </div>
+    </div>
+    <div class="case-card fade-up d1">
+      <div class="case-industry">Manufacturing · Costing Services</div>
+      <div class="case-title" style="font-family:var(--font-display);font-size:1.4rem;font-weight:600;color:var(--white);margin:0.75rem 0;line-height:1.3;">Full BOM Costing for a New Product Launch</div>
+      <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.8;">A consumer electronics manufacturer needed accurate landed cost modelling for a new product line before committing to production. Inaccurate early estimates had caused two previous launches to miss margin targets.</p>
+      <div class="case-metrics">
+        <div class="metric"><div class="metric-num">28%</div><div class="metric-label">Cost Overrun Avoided</div></div>
+        <div class="metric"><div class="metric-num">100+</div><div class="metric-label">BOM Line Items</div></div>
+        <div class="metric"><div class="metric-num">48h</div><div class="metric-label">Model Delivered</div></div>
+      </div>
+      <div class="case-service-tags">
+        <span class="case-tag">Costing Services</span>
+        <span class="case-tag">BOM Costing</span>
+        <span class="case-tag">Landed Cost</span>
+      </div>
+    </div>
+    <div class="case-card fade-up d2">
+      <div class="case-industry">IoT · All Three Services</div>
+      <div class="case-title" style="font-family:var(--font-display);font-size:1.4rem;font-weight:600;color:var(--white);margin:0.75rem 0;line-height:1.3;">End-to-End Cost Intelligence for an IoT Hardware Startup</div>
+      <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.8;">An early-stage IoT company needed to bid for a government smart-city contract while simultaneously setting up a costing framework for ongoing hardware procurement. We delivered both concurrently.</p>
+      <div class="case-metrics">
+        <div class="metric"><div class="metric-num">42%</div><div class="metric-label">Cost Savings</div></div>
+        <div class="metric"><div class="metric-num">1</div><div class="metric-label">Contract Won</div></div>
+        <div class="metric"><div class="metric-num">90d</div><div class="metric-label">Engagement</div></div>
+      </div>
+      <div class="case-service-tags">
+        <span class="case-tag">Bidding</span>
+        <span class="case-tag">Costing</span>
+        <span class="case-tag">Optimization</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAND -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div class="fade-up"><div class="band-num">₹50Cr+</div><div class="band-label">Client Savings Delivered</div></div>
+    <div class="fade-up d1"><div class="band-num">200+</div><div class="band-label">Projects Completed</div></div>
+    <div class="fade-up d2"><div class="band-num">15+</div><div class="band-label">Industries Served</div></div>
+    <div class="fade-up d3"><div class="band-num">98%</div><div class="band-label">Client Retention</div></div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-band fade-up">
+  <h2>Want Results Like<br/><em>These?</em></h2>
+  <p>Tell us about your project and we'll show you where the savings are.</p>
+  <a href="/#contact" class="btn-primary">Start a Conversation</a>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div><div class="footer-logo">Cost<span>Bid</span> Solutions</div><p class="footer-tagline">Precision bidding and intelligent cost management for supply chain firms.</p></div>
+    <div class="footer-col"><h4>Services</h4><ul><li><a href="/#services">Bidding Services</a></li><li><a href="/#services">Costing Services</a></li><li><a href="/#services">Cost Optimization</a></li></ul></div>
+    <div class="footer-col"><h4>Company</h4><ul><li><a href="/about.html">About Us</a></li><li><a href="/team.html">Our Team</a></li><li><a href="/case-studies.html">Case Studies</a></li><li><a href="/careers.html">Careers</a></li></ul></div>
+    <div class="footer-col"><h4>Connect</h4><ul><li><a href="#">LinkedIn</a></li><li><a href="/#contact">Contact Us</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 CostBid Solutions. All rights reserved.</div>
+    <div class="footer-copy">Gurugram, Haryana, India</div>
+  </div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
