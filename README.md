@@ -1,190 +1,78 @@
-# CostBid Solutions — Full-Stack Website
+# CostBid Solutions — Setup Guide
 
-A production-ready website with Python (FastAPI) backend and SQLite database.
-
-## Project Structure
-
-```
-costbid/
-├── main.py              # FastAPI backend (API + static file serving)
-├── requirements.txt     # Python dependencies
-├── Procfile             # For Railway / Heroku
-├── railway.json         # Railway config
-├── render.yaml          # Render config
-├── README.md
-└── static/
-    └── index.html       # Full frontend (served by FastAPI)
-```
+Every enquiry from your website goes to **two places**:
+1. 📊 **Google Sheets** — a live spreadsheet log of all enquiries
+2. 📧 **Gmail** — instant email notification to 4720yashjain@gmail.com
 
 ---
 
-## Running Locally
+## PART 1 — Google Sheets Setup (10 minutes)
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+### Step 1 — Create the Spreadsheet
+1. Go to [sheets.google.com](https://sheets.google.com)
+2. Click **Blank** → name it **CostBid Enquiries**
+3. Keep this tab open
 
-# 2. Start the server
-uvicorn main:app --reload --port 8000
+### Step 2 — Open Apps Script
+1. Click **Extensions** → **Apps Script**
+2. Delete everything in the editor
+3. Copy the entire contents of `google_apps_script.js` and paste it in
+4. Click **Save** — name it `CostBid`
 
-# 3. Open browser
-# http://localhost:8000
-```
+### Step 3 — Deploy as Web App
+1. Click **Deploy** → **New deployment**
+2. Click the ⚙️ gear → choose **Web app**
+3. Set: Execute as = **Me** | Who has access = **Anyone**
+4. Click **Deploy** → **Authorize access** → Allow
+5. **Copy the Web App URL** (looks like `https://script.google.com/macros/s/XXX/exec`)
 
----
-
-## API Endpoints
-
-| Method | URL | Description |
-|--------|-----|-------------|
-| POST | `/api/enquiry` | Save form submission to DB |
-| GET | `/api/enquiries?secret=YOUR_SECRET` | List all enquiries (admin) |
-| GET | `/api/health` | Health check |
-
-### View Enquiries (Admin)
-```
-https://your-domain.com/api/enquiries?secret=costbid-admin-2025
-```
-Change the secret by setting the `ADMIN_SECRET` environment variable.
+### Step 4 — Add to Railway
+Railway dashboard → your service → **Variables** tab → Add:
+- Key: `SHEETS_WEBHOOK` | Value: *(paste the URL)*
 
 ---
 
-## Deploy to Railway (Recommended — Free tier available)
+## PART 2 — Gmail Setup (5 minutes)
 
-1. **Push to GitHub**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git remote add origin https://github.com/YOUR_USERNAME/costbid.git
-   git push -u origin main
-   ```
+### Step 1 — Enable 2-Step Verification
+Go to [myaccount.google.com/security](https://myaccount.google.com/security) → turn on 2-Step Verification
 
-2. **Deploy on Railway**
-   - Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
-   - Select your repo
-   - Railway auto-detects Python and deploys
-   - Your site will be live at `https://costbid-xxx.railway.app`
+### Step 2 — Create App Password
+Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) → App name: `CostBid` → Create
+Copy the 16-character password shown (no spaces when you paste it)
 
-3. **Set environment variable** (optional, for admin security)
-   - In Railway dashboard → Variables → Add `ADMIN_SECRET=your-secret-here`
+### Step 3 — Add to Railway Variables
+
+| Key | Value |
+|-----|-------|
+| `GMAIL_SENDER` | your Gmail (e.g. `hkhimanshu645@gmail.com`) |
+| `GMAIL_APP_PASSWORD` | 16-char password (no spaces) |
 
 ---
 
-## Deploy to Render (Free tier)
-
-1. Push code to GitHub (same as above)
-2. Go to [render.com](https://render.com) → New → Web Service
-3. Connect your GitHub repo
-4. Settings:
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-5. Add a **Disk** (for SQLite persistence):
-   - Mount path: `/data`
-   - Then update `DB_PATH` in `main.py` to `/data/costbid.db`
-6. Click Deploy
+## PART 3 — Test It
+1. Open your live site → submit the contact form
+2. Check Google Sheet — new row appears ✅
+3. Check Gmail inbox at `4720yashjain@gmail.com` ✅
 
 ---
 
-## Deploy to VPS (DigitalOcean / AWS / Hetzner)
+## All Railway Variables (summary)
 
-```bash
-# On your server
-sudo apt update && sudo apt install python3-pip nginx -y
-pip3 install -r requirements.txt
-
-# Run with systemd (recommended)
-sudo nano /etc/systemd/system/costbid.service
-```
-
-Paste:
-```ini
-[Unit]
-Description=CostBid FastAPI App
-After=network.target
-
-[Service]
-User=ubuntu
-WorkingDirectory=/home/ubuntu/costbid
-ExecStart=/usr/local/bin/uvicorn main:app --host 127.0.0.1 --port 8000
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```bash
-sudo systemctl enable costbid
-sudo systemctl start costbid
-
-# Nginx reverse proxy
-sudo nano /etc/nginx/sites-available/costbid
-```
-
-Nginx config:
-```nginx
-server {
-    listen 80;
-    server_name yourdomain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-```bash
-sudo ln -s /etc/nginx/sites-available/costbid /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl restart nginx
-
-# Add SSL (free)
-sudo apt install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d yourdomain.com
-```
+| Variable | What it is |
+|----------|-----------|
+| `SHEETS_WEBHOOK` | Apps Script Web App URL |
+| `GMAIL_SENDER` | Gmail address sending the notification |
+| `GMAIL_APP_PASSWORD` | 16-char App Password from Google |
+| `NOTIFY_EMAIL` | Already set to `4720yashjain@gmail.com` in code |
+| `ADMIN_SECRET` | Change to secure your `/api/enquiries` endpoint |
 
 ---
 
-## SQLite Database
+## Troubleshooting
 
-The database file `costbid.db` is auto-created on first run.
+**No email?** → Check spam | Verify App Password has no spaces | Confirm 2-Step is ON
 
-**Table: enquiries**
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER | Auto-increment primary key |
-| first_name | TEXT | Submitter's first name |
-| last_name | TEXT | Submitter's last name |
-| company | TEXT | Company name |
-| email | TEXT | Email address |
-| service | TEXT | Service requested |
-| brief | TEXT | Project description |
-| created_at | TEXT | UTC timestamp |
-| status | TEXT | new / contacted / closed |
+**Sheet not updating?** → Re-deploy Apps Script (Deploy → Manage → edit → New version)
 
----
-
-## Upgrading to PostgreSQL (Production)
-
-For heavy traffic, swap SQLite for PostgreSQL:
-
-```bash
-pip install asyncpg databases[postgresql]
-```
-
-Update `DB_PATH` connection string in `main.py`:
-```python
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@host/db")
-```
-
----
-
-## Security Checklist for Production
-
-- [ ] Change `ADMIN_SECRET` environment variable
-- [ ] Add rate limiting (e.g., `slowapi`)
-- [ ] Enable HTTPS (SSL certificate)
-- [ ] Restrict CORS `allow_origins` to your domain
-- [ ] Move SQLite to persistent disk or switch to PostgreSQL
-- [ ] Add input sanitization / honeypot fields
+**Check Railway logs** → Dashboard → service → Logs tab → look for `Sheets error:` or `Email error:`
