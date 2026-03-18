@@ -9,28 +9,28 @@ import urllib.request
 import urllib.error
 import json
 from datetime import datetime
-
+ 
 app = FastAPI(title="CostBid Solutions API")
-
+ 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+ 
 BREVO_API_KEY  = os.getenv("BREVO_API_KEY", "")
 NOTIFY_EMAIL   = os.getenv("NOTIFY_EMAIL", "4720yashjain@gmail.com")
 SHEETS_WEBHOOK = os.getenv("SHEETS_WEBHOOK", "")
 ADMIN_SECRET   = os.getenv("ADMIN_SECRET", "costbid-admin-2025")
 DB_PATH        = os.getenv("DB_PATH", "costbid.db")
-
+ 
 # ── DATABASE ──────────────────────────────────────────────────────────────────
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
+ 
 def init_db():
     conn = get_db()
     conn.execute("""
@@ -48,9 +48,9 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-
+ 
 init_db()
-
+ 
 class EnquiryIn(BaseModel):
     first_name: str
     last_name: str
@@ -58,7 +58,7 @@ class EnquiryIn(BaseModel):
     email: str
     service: str
     brief: str = ""
-
+ 
 # ── GOOGLE SHEETS ─────────────────────────────────────────────────────────────
 def send_to_sheets(data: EnquiryIn, timestamp: str):
     if not SHEETS_WEBHOOK:
@@ -84,12 +84,12 @@ def send_to_sheets(data: EnquiryIn, timestamp: str):
             print("Sheets response:", resp.read().decode())
     except Exception as e:
         print(f"Sheets error: {e}")
-
+ 
 # ── EMAIL via Brevo (works on Railway) ───────────────────────────────────────
 def send_email_notification(data: EnquiryIn, timestamp: str):
     key = BREVO_API_KEY.strip()
     print(f"[Email] Brevo key present: {bool(key)} | Notify: {NOTIFY_EMAIL}")
-
+ 
     if not key:
         print("[Email] No Brevo API key — skipping.")
         return
@@ -124,14 +124,14 @@ def send_email_notification(data: EnquiryIn, timestamp: str):
           </p>
         </div>
         """
-
+ 
         payload = json.dumps({
             "sender":      {"name": "CostBid Solutions", "email": "4720yashjain@gmail.com"},
             "to":          [{"email": NOTIFY_EMAIL.strip()}],
             "subject":     f"New Enquiry — {data.first_name} {data.last_name} ({data.company})",
             "htmlContent": html,
         }).encode("utf-8")
-
+ 
         req = urllib.request.Request(
             "https://api.brevo.com/v3/smtp/email",
             data=payload,
@@ -145,13 +145,13 @@ def send_email_notification(data: EnquiryIn, timestamp: str):
         with urllib.request.urlopen(req, timeout=15) as resp:
             result = resp.read().decode()
             print(f"[Email] Success: {result}")
-
+ 
     except urllib.error.HTTPError as e:
         body = e.read().decode()
         print(f"[Email] HTTP {e.code}: {body}")
     except Exception as e:
         print(f"[Email] Exception: {type(e).__name__}: {e}")
-
+ 
 # ── DEBUG ─────────────────────────────────────────────────────────────────────
 @app.get("/api/test-email")
 async def test_email():
@@ -162,7 +162,7 @@ async def test_email():
         "notify_email":        NOTIFY_EMAIL,
         "sheets_webhook_present": bool(SHEETS_WEBHOOK),
     }
-
+ 
 # ── ROUTES ────────────────────────────────────────────────────────────────────
 @app.post("/api/enquiry")
 async def submit_enquiry(data: EnquiryIn):
@@ -182,7 +182,7 @@ async def submit_enquiry(data: EnquiryIn):
     send_to_sheets(data, now)
     send_email_notification(data, now)
     return {"success": True, "message": "Enquiry received. We'll contact you within 24 hours."}
-
+ 
 @app.get("/api/enquiries")
 async def list_enquiries(secret: str = ""):
     if secret != ADMIN_SECRET:
@@ -191,13 +191,24 @@ async def list_enquiries(secret: str = ""):
     rows = conn.execute("SELECT * FROM enquiries ORDER BY created_at DESC").fetchall()
     conn.close()
     return [dict(r) for r in rows]
-
+ 
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
-
+ 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
+ 
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
+    import os
+    # Serve exact file if it exists
+    candidate = f"static/{full_path}"
+    if os.path.isfile(candidate):
+        return FileResponse(candidate)
+    # Try adding .html extension
+    candidate_html = f"static/{full_path}.html"
+    if os.path.isfile(candidate_html):
+        return FileResponse(candidate_html)
+    # Fallback to index
     return FileResponse("static/index.html")
+ 
